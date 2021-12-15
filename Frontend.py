@@ -32,12 +32,12 @@ class Search(Resource):
         else:
             if(catalogFlag):
                 #Server A (Windows)
-                countcatalog = 0
+                catalogFlag = 0
                 result =requests.get('http://172.16.96.99:5000/search/'+str(topic)).json() 
                 cache.set(topic, result)
             else:
                 #Server B (Ubuntu)
-                countcatalog = 1
+                catalogFlag = 1
                 result =requests.get('http://172.16.96.104:5000/search/'+str(topic)).json()
                 cache.set(topic, result)
         myArray[chacheSize] = topic
