@@ -16,6 +16,42 @@ index=0
  
 catalogFlag = 1
 
+class Search(Resource):
+
+    @cache.memoize(50)
+    def get(self, topic):
+
+        global chacheSize
+        global myArray
+        global index
+        global catalogFlag
+
+        itemfound = cache.get(topic)
+        if itemfound:
+            return {'The item exist in the cache': itemfound},200
+        else:
+            if(catalogFlag):
+                #Server A (Windows)
+                countcatalog = 0
+                result =requests.get('http://172.16.96.99:5000/search/'+str(topic)).json() 
+                cache.set(topic, result)
+            else:
+                #Server B (Ubuntu)
+                countcatalog = 1
+                result =requests.get('http://172.16.96.104:5000/search/'+str(topic)).json()
+                cache.set(topic, result)
+        myArray[chacheSize] = topic
+        chacheSize = chacheSize + 1
+
+        if chacheSize > 4:
+            cache.delete(myArray[index])
+            index= index+1
+
+        if(catalogFlag):
+           return {'From Server B': result}
+        else:  
+           return {'From Server A': result}
+
 
 class Info(Resource):
 
@@ -44,7 +80,7 @@ class Info(Resource):
         myArray[chacheSize] = str(num)
         chacheSize = chacheSize + 1
 
-        if chacheSize> 10:
+        if chacheSize> 4:
             cache.delete(myArray[index])
             index= index+1
         if(catalogFlag):
@@ -52,6 +88,8 @@ class Info(Resource):
         else:  
            return {'From Server A': result}
 
+
+api.add_resource(Search, '/search/<string:topic>')
 api.add_resource(Info, '/info/<int:num>')
 
 
