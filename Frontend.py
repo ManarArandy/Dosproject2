@@ -15,6 +15,7 @@ myArray = [None] * 50
 index=0
  
 catalogFlag = 1
+orderFlag = 1
 
 class Search(Resource):
 
@@ -69,12 +70,12 @@ class Info(Resource):
             if(catalogFlag):
                 #Server A (Windows)
                 catalogFlag = 0
-                result =requests.get('http://172.16.96.99:5000/info/'+str(num)).json() 
+                result =requests.get('http://172.16.96.99:5001/info/'+str(num)).json() 
                 cache.set(str(num), result)
             else:
                 #Server B (Ubuntu)
                 catalogFlag = 1
-                result =requests.get('http://172.16.96.104:5000/info/'+str(num)).json()
+                result =requests.get('http://172.16.96.104:5003/info/'+str(num)).json()
                 cache.set(str(num), result)
 
         myArray[chacheSize] = str(num)
@@ -88,10 +89,37 @@ class Info(Resource):
         else:  
            return {'From Server A': result}
 
+class Purchase(Resource):
+
+    def put(self, num):        
+        global orderFlag
+        
+        if(orderFlag):
+            #Server A (Windows)
+            orderFlag = 0
+            #req order server and specifies an item number for purchase
+            return requests.put('http://172.16.96.99:5005/purchase/'+str(num)).json() 
+        else:
+            #Server B (Ubuntu)
+            orderFlag = 1
+            #req order server and specifies an item number for purchase
+            return requests.put('http://172.16.96.104:5004/purchase/'+str(num)).json()
+
+#Cache consistency   
+class Invalidate(Resource):
+#delete the old-item if found to achieve consistency
+    @cache.cached(timeout=50)
+    @cache.memoize(50)
+    def get(self, item):
+        itemfound = cache.get(item)
+        if itemfound:
+            cache.delete(item)
+
 
 api.add_resource(Search, '/search/<string:topic>')
 api.add_resource(Info, '/info/<int:num>')
-
+api.add_resource(Purchase, '/purchase/<int:num>')
+api.add_resource(Invalidate, '/invalidate/<string:item>')
 
 if __name__ == '__main__':
     app.run()
