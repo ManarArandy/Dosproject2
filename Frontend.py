@@ -34,12 +34,12 @@ class Search(Resource):
             if(catalogFlag):
                 #Server A (Windows)
                 catalogFlag = 0
-                result =requests.get('http://172.16.96.99:5000/search/'+str(topic)).json() 
+                result =requests.get('http://172.19.225.232:5001/search/'+str(topic)).json() 
                 cache.set(topic, result)
             else:
                 #Server B (Ubuntu)
                 catalogFlag = 1
-                result =requests.get('http://172.16.96.104:5000/search/'+str(topic)).json()
+                result =requests.get('http://172.19.232.86:5003/search/'+str(topic)).json()
                 cache.set(topic, result)
         myArray[chacheSize] = topic
         chacheSize = chacheSize + 1
@@ -70,12 +70,12 @@ class Info(Resource):
             if(catalogFlag):
                 #Server A (Windows)
                 catalogFlag = 0
-                result =requests.get('http://172.16.96.99:5001/info/'+str(num)).json() 
+                result =requests.get('http://172.19.225.232:5001/info/'+str(num)).json() 
                 cache.set(str(num), result)
             else:
                 #Server B (Ubuntu)
                 catalogFlag = 1
-                result =requests.get('http://172.16.96.104:5003/info/'+str(num)).json()
+                result =requests.get('http://172.19.232.86:5003/info/'+str(num)).json()
                 cache.set(str(num), result)
 
         myArray[chacheSize] = str(num)
@@ -98,12 +98,12 @@ class Purchase(Resource):
             #Server A (Windows)
             orderFlag = 0
             #req order server and specifies an item number for purchase
-            return requests.put('http://172.16.96.99:5005/purchase/'+str(num)).json() 
+            return requests.put('http://172.19.225.232:5002/purchase/'+str(num)).json() 
         else:
             #Server B (Ubuntu)
             orderFlag = 1
             #req order server and specifies an item number for purchase
-            return requests.put('http://172.16.96.104:5004/purchase/'+str(num)).json()
+            return requests.put('http://172.19.232.86:5004/purchase/'+str(num)).json()
 
 #Cache consistency   
 class Invalidate(Resource):
